@@ -652,6 +652,8 @@ static int CompressFile(const char *src, const char *dst,
 
     if (algo == 1)      { winsize = C_WINDOW_4096; start = C_START_EXPAND;
                           minlen = 3; maxlen = 18; }
+    else if (algo == 5) { winsize = C_WINDOW_4096; start = C_START_KWAJ;
+                          minlen = 3; maxlen = 18; }
     else if (algo == 2) { winsize = C_WINDOW_4096; start = C_START_KWAJ;
                           minlen = 3; maxlen = 18; }
     else if (algo == 3) { winsize = C_WINDOW_4096; start = C_START_KWAJ;
@@ -674,7 +676,7 @@ static int CompressFile(const char *src, const char *dst,
         return 1;
     }
 
-    if (algo == 1)
+    if (algo == 1 || algo == 5)
     {
         unsigned char hdr[14];
         char missing = 0;
@@ -689,7 +691,7 @@ static int CompressFile(const char *src, const char *dst,
             }
         }
         memcpy(hdr, C_SIG_SZDD, 8);
-        hdr[8] = 'A';
+        hdr[8] = (algo == 5) ? 'B' : 'A';
         hdr[9] = (unsigned char)missing;
         Put32(hdr + 10, insize);
         if (fwrite(hdr, 1, 14, out) != 14) goto out_fail;
@@ -781,6 +783,7 @@ static void Usage(void)
     printf("      2 - the Steven Zeck algorithm (LZSS).\n");
     printf("      3 - Jeff Johnson's algorithm (LZSS + Huffman).\n");
     printf("      4 - KWAJ method 4 (MS-ZIP, extension).\n");
+    printf("      5 - SZDD type B (LZSS, window start 4096-18).\n");
     printf("   -l will NOT include each file length in the header.\n");
     printf("   -q will compute compressed file lengths (no output).\n");
     printf("   -$ will turn OFF underscore renaming.\n");
@@ -814,7 +817,7 @@ int main(int argc, char **argv)
         if (a[1] == 'a')
         {
             algo = atoi(a + 2);
-            if (algo < 1 || algo > 4) { Usage(); return 1; }
+            if (algo < 1 || algo > 5) { Usage(); return 1; }
         }
         else if (a[1] == 'l') no_length = 1;
         else if (a[1] == 'q') quiet = 1;

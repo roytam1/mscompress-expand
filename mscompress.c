@@ -204,9 +204,10 @@ int MsCompressReadHeader(FILE *in, MsCompressHeader *h)
     {
         if (fread(buf, 1, 6, in) != 6)
             return MSCOMPRESS_ERR_READ;
-        if (buf[0] != 0x41)
+        if (buf[0] != 0x41 && buf[0] != 0x42)
             return MSCOMPRESS_ERR_DATA;
         h->format = MSCOMPRESS_SZDD;
+        h->method = buf[0];        /* 'A' = start 4096-16, 'B' = 4096-18 */
         h->missingchar = (char)buf[1];
         h->origsize = (unsigned long)buf[2] |
                       ((unsigned long)buf[3] << 8) |
@@ -380,7 +381,7 @@ const char *MsCompressModeName(const MsCompressHeader *h)
     switch (h->format)
     {
     case MSCOMPRESS_SZDD:
-        return "SZDD";
+        return h->method == 0x42 ? "SZDD-B" : "SZDD";
     case MSCOMPRESS_SZDD_QBASIC:
         return "SZDD-QB";
     case MSCOMPRESS_KWAJ:
@@ -692,6 +693,8 @@ int MsCompressDecode(FILE *in, FILE *out, const MsCompressHeader *h)
     switch (h->format)
     {
     case MSCOMPRESS_SZDD:
+        if (h->method == 0x42)
+            return MsLzssDecode(in, out, h->origsize, MSC_START_QBASIC);
         return MsLzssDecode(in, out, h->origsize, MSC_START_EXPAND);
     case MSCOMPRESS_SZDD_QBASIC:
         return MsLzssDecode(in, out, h->origsize, MSC_START_QBASIC);
