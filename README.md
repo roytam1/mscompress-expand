@@ -74,8 +74,9 @@ character replaced by `_`/`$` and completing two-letter extensions).
 
 * All four supplied samples (`LI-szdd.tx_`, `LI-kwaj2/3/4.tx_`) expand to
   exactly `LICENCE.txt` (18,340 bytes).
-* The SZDD type B sample `APPS.IN_` expands to 14,729 bytes, matching the
-  size in its header; `-a5` writes the same variant and round-trips.
+* The SZDD type B sample `APPS.IN_` expands to 14,729 bytes, byte-for-byte
+  identical to the output of the reference `EXPANDB.EXE` 2.00; `-a5`
+  writes the same variant and round-trips.
 * Files written with `-a1`, `-a2` and `-a3` are decompressed correctly by
   the original `EXPAND.EXE`; `-a4` files by the original `DECOMP.EXE`
   (verified after the Huffman improvements).
